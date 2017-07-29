@@ -187,7 +187,7 @@ Vagrant.configure("2") do |config|
       workerIP = workerIP(i)
       worker.vm.network :public_network, ip: workerIP, bridge: "enp4s0"
 
-      provisionMachineSSL(worker,"worker","kube-worker-#{workerIP}",[workerIP])
+      #provisionMachineSSL(worker,"worker","kube-worker-#{workerIP}",[workerIP])
 
       #worker.vm.provision :file, :source => env_file, :destination => "/tmp/coreos-kube-options.env"
       #worker.vm.provision :shell, :inline => "mkdir -p /run/coreos-kubernetes && mv /tmp/coreos-kube-options.env /run/coreos-kubernetes/options.env", :privileged => true

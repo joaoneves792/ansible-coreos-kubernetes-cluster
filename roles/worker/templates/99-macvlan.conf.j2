@@ -1,0 +1,13 @@
+{
+    "name": "k8s-pod-vnet",
+    "cniVersion": "0.1.0",
+    "type": "macvlan",
+    "master": "eth1",
+    "ipam": {
+        "type": "dhcp"
+    },
+    "dns": {
+      "nameservers": [ "{{DNS_SERVICE_IP}}" ]
+  }
+}
+

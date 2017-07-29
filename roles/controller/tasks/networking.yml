@@ -4,13 +4,16 @@
     src: calico.yaml.j2
     dest: "{{ addons_manifests_folder }}/calico.yaml"
 
-    #- name: install bridge config
+    #- name: install macvlan
     #  template:
-    #    src: 10-bridge.conf.j2
-    #    dest: /etc/kubernetes/cni/net.d/10-bridge.conf
+    #    src: 99-macvlan.conf.j2
+    #    dest: "{{cni_config_folder}}/99-macvlan.conf" 
 
     #- name: install basic cni plugins
     #  unarchive:
     #    src: "{{BASE_CNI_PLUGINS_URL}}"
     #    dest: "{{cni_plugins_folder}}"
     #    remote_src: True
+
+    #- name: start DHCP daemon
+    #  command: "docker run --rm -d --net=host -v {{cni_plugins_folder}}:/host{{cni_plugins_folder}} -v /run:/run  {{HYPERKUBE_IMAGE_REPO}}:{{K8S_VER}} /host{{cni_plugins_folder}}/dhcp daemon"

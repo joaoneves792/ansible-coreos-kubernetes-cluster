@@ -13,7 +13,44 @@
     - command: /usr/bin/ip addr flush dev eth1
     - command: "/usr/bin/ip addr add {{hostvars[inventory_hostname]['public_ip']}}/24 dev eth1"
 
-- name: Upload ssl info
+
+- name: Etcd
+  hosts: etcds
+  gather_facts: True
+  become: True
+  roles:
+    - etcd
+
+- name: Generate SSL material for Controllers
+  hosts: controllers
+  gather_facts: True
+  vars_files: 
+    - vars.yaml
+  vars:
+    controllers_ips: "IP.1={{K8S_SERVICE_IP}},{% set comma = joiner(',') %}{% for host in groups['controllers'] %}{{ comma() }}IP.{{loop.index+1}}={{ hostvars[host]['public_ip'] }}{% endfor %}"
+    advertise_ip : "{{hostvars[inventory_hostname]['public_ip']}}"
+  tasks:
+    - stat:
+        path: "ssl/kube-{{inventory_hostname}}-{{advertise_ip}}.tar"
+      register: tar
+    - local_action: shell ./lib/init-ssl ssl apiserver "kube-apiserver-{{advertise_ip}}" "{{controllers_ips|quote}}"
+      when: tar.stat.exists != True
+
+- name: Generate SSL material for Workers
+  hosts: workers
+  gather_facts: True
+  vars:
+    etcd_endpoints: "{% set comma = joiner(',') %}{% for host in groups['etcds'] %}{{ comma() }}http://{{ hostvars[host]['public_ip'] }}:2379{% endfor %}"
+    advertise_ip : "{{hostvars[inventory_hostname]['public_ip']}}"
+    controller_endpoints: "{% set comma = joiner(',') %}{% for host in groups['controllers'] %}{{ comma() }}https://{{ hostvars[host]['public_ip'] }}:443{% endfor %}"
+  tasks:
+    - stat:
+        path: "ssl/kube-{{inventory_hostname}}-{{advertise_ip}}.tar"
+      register: tar
+    - local_action: shell ./lib/init-ssl ssl worker kube-worker-"{{advertise_ip}}" "IP.1=""{{advertise_ip}}"
+      when: tar.stat.exists != True
+
+- name: Upload ssl material
   hosts: all
   gather_facts: False
   become: True
@@ -25,22 +62,19 @@
       with_fileglob:
         - "ssl/*-{{hostvars[inventory_hostname]['public_ip']}}.tar"
 
-- name: Etcd
-  hosts: etcds
-  gather_facts: True
-  become: True
-  roles:
-    - etcd
-
 - name: Controllers
   hosts: controllers
   gather_facts: True
   become: True
   vars:
     etcd_endpoints: "{% set comma = joiner(',') %}{% for host in groups['etcds'] %}{{ comma() }}http://{{ hostvars[host]['public_ip'] }}:2379{% endfor %}"
+    controllers_ips: "{% set comma = joiner(',') %}{% for host in groups['controllers'] %}{{ comma() }}IP.{{loop.index}}={{ hostvars[host]['public_ip'] }}{% endfor %}"
     advertise_ip : "{{hostvars[inventory_hostname]['public_ip']}}"
+  pre_tasks:
+    - include_vars: vars.yaml
   roles:
-    - controller 
+    - controller
+
 
 - name: Workers
   hosts: workers
@@ -50,5 +84,7 @@
     etcd_endpoints: "{% set comma = joiner(',') %}{% for host in groups['etcds'] %}{{ comma() }}http://{{ hostvars[host]['public_ip'] }}:2379{% endfor %}"
     advertise_ip : "{{hostvars[inventory_hostname]['public_ip']}}"
     controller_endpoints: "{% set comma = joiner(',') %}{% for host in groups['controllers'] %}{{ comma() }}https://{{ hostvars[host]['public_ip'] }}:443{% endfor %}"
+  pre_tasks:
+    - include_vars: vars.yaml
   roles:
     - worker 

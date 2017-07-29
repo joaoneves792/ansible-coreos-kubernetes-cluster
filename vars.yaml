@@ -1,5 +1,4 @@
 ---
-# vars file for controller
 K8S_VER: v1.7.2_coreos.0
 HYPERKUBE_IMAGE_REPO: quay.io/coreos/hyperkube
 
@@ -15,3 +14,4 @@ manifests_folder: /etc/kubernetes/manifests
 addons_manifests_folder: /srv/kubernetes/manifests
 services_folder: /etc/systemd/system
 cni_plugins_folder: /opt/cni/bin
+cni_config_folder: /etc/kubernetes/cni/net.d

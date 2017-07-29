@@ -8,6 +8,9 @@
 
 - name: ensure services folder exists
   file: path="{{services_folder}}" state=directory
+
+- name: ensure cni config folder exists
+  file: path="{{cni_config_folder}}" state=directory
   
 - name: ensure /opt/bin folder exists
   file: path=/opt/bin state=directory
@@ -26,6 +29,11 @@
   template:
     src: worker-kubeconfig.yaml.j2
     dest: "/etc/kubernetes/worker-kubeconfig.yaml"
+
+    #- name: install macvlan
+    #  template:
+    #    src: 99-macvlan.conf.j2
+    #    dest: "{{cni_config_folder}}/99-macvlan.conf" 
 
 - name: host-rkt
   copy:
