@@ -1,0 +1,31 @@
+- name: install kubelet service
+  template:
+    src: kubelet.service.j2
+    dest: "{{ services_folder }}/kubelet.service"
+
+- name: install api-server
+  template:
+    src: kube-apiserver.yaml.j2
+    dest: "{{ manifests_folder }}/kube-apiserver.yaml"
+
+- name: install kube-proxy
+  template:
+    src: kube-proxy.yaml.j2
+    dest: "{{ manifests_folder }}/kube-proxy.yaml"
+
+- name: install kube-controller-manager
+  template:
+    src: kube-controller-manager.yaml.j2
+    dest: "{{ manifests_folder }}/kube-controller-manager.yaml"
+
+- name: install kube-scheduler
+  template:
+    src: kube-scheduler.yaml.j2
+    dest: "{{ manifests_folder }}/kube-scheduler.yaml"
+
+- name: host-rkt
+  copy:
+    src: host-rkt
+    dest: /opt/bin/host-rkt
+    mode: "ugo+x"
+

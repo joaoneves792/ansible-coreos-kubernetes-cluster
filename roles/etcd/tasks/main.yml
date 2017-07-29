@@ -1,0 +1,6 @@
+---
+# tasks file for etcd
+- name: load the startup script
+  template: 
+    src: etcd-cloud-config.yaml.j2
+    dest: /var/lib/coreos-vagrant/vagrantfile-user-data

@@ -1,0 +1,19 @@
+#cloud-config
+
+coreos:
+  update:
+    reboot-strategy: "off"
+
+  etcd2:
+    name: {{etcd_name}}
+    initial-cluster: {{etcd_initial_cluster}}
+    advertise-client-urls: http://{{etcd_ip}}:2379
+    listen-client-urls: http://0.0.0.0:2379
+    initial-advertise-peer-urls: http://{{etcd_ip}}:2380
+    listen-peer-urls: http://{{etcd_ip}}:2380
+
+  units:
+
+  - name: etcd2.service
+    command: start
+

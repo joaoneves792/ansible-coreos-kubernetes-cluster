@@ -1,0 +1,42 @@
+[Service]
+Environment=KUBELET_IMAGE_TAG={{K8S_VER}}
+Environment=KUBELET_IMAGE_URL={{HYPERKUBE_IMAGE_REPO}}
+Environment="RKT_RUN_ARGS=--uuid-file-save=${uuid_file} \
+  --volume dns,kind=host,source=/etc/resolv.conf \
+  --mount volume=dns,target=/etc/resolv.conf \
+  --volume rkt,kind=host,source=/opt/bin/host-rkt \
+  --mount volume=rkt,target=/usr/bin/rkt \
+  --volume var-lib-rkt,kind=host,source=/var/lib/rkt \
+  --mount volume=var-lib-rkt,target=/var/lib/rkt \
+  --volume stage,kind=host,source=/tmp \
+  --mount volume=stage,target=/tmp \
+  --volume var-log,kind=host,source=/var/log \
+  --mount volume=var-log,target=/var/log \
+  --volume cni-bin,kind=host,source=/opt/cni/bin \
+  --mount volume=cni-bin,target=/opt/cni/bin"
+ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+ExecStartPre=/usr/bin/mkdir -p /opt/cni/bin
+ExecStartPre=/usr/bin/mkdir -p /var/log/containers
+ExecStartPre=-/usr/bin/rkt rm --uuid-file=${uuid_file}
+ExecStart=/usr/lib/coreos/kubelet-wrapper \
+  --api-servers={{controller_endpoints}} \
+  --cni-conf-dir=/etc/kubernetes/cni/net.d \
+  --network-plugin=cni \
+  --container-runtime=docker \
+  --rkt-path=/usr/bin/rkt \
+  --rkt-stage1-image=coreos.com/rkt/stage1-coreos \
+  --allow-privileged=true \
+  --pod-manifest-path=/etc/kubernetes/manifests \
+  --hostname-override={{advertise_ip}} \
+  --cluster_dns={{DNS_SERVICE_IP}} \
+  --cluster_domain=cluster.local \
+  --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml \
+  --tls-cert-file=/etc/kubernetes/ssl/worker.pem \
+  --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

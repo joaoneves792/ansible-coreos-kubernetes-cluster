@@ -1,0 +1,47 @@
+---
+# tasks file for controller
+- name: ensure manifests folder exists
+  file: path="{{manifests_folder}}" state=directory
+
+- name: ensure addons manifests folder exists
+  file: path="{{addons_manifests_folder}}" state=directory
+
+- name: ensure services folder exists
+  file: path="{{services_folder}}" state=directory
+  
+- name: ensure /opt/bin folder exists
+  file: path=/opt/bin state=directory
+
+- name: install kubelet service
+  template:
+    src: kubelet.service.j2
+    dest: "{{ services_folder }}/kubelet.service"
+
+- name: install kube-proxy
+  template:
+    src: kube-proxy.yaml.j2
+    dest: "{{ manifests_folder }}/kube-proxy.yaml"
+
+- name: install worker config
+  template:
+    src: worker-kubeconfig.yaml.j2
+    dest: "/etc/kubernetes/worker-kubeconfig.yaml"
+
+- name: host-rkt
+  copy:
+    src: host-rkt
+    dest: /opt/bin/host-rkt
+    mode: "ugo+x"
+
+- name: disable update engine
+  systemd:
+    name: update-engine
+    state: stopped
+    masked: yes
+
+- name: enable and start kubelet service
+  systemd:
+    name: kubelet
+    enabled: yes
+    state: started
+    daemon_reload: yes

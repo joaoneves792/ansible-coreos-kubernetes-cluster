@@ -1,0 +1,16 @@
+---
+- name: install calico
+  template:
+    src: calico.yaml.j2
+    dest: "{{ addons_manifests_folder }}/calico.yaml"
+
+    #- name: install bridge config
+    #  template:
+    #    src: 10-bridge.conf.j2
+    #    dest: /etc/kubernetes/cni/net.d/10-bridge.conf
+
+    #- name: install basic cni plugins
+    #  unarchive:
+    #    src: "{{BASE_CNI_PLUGINS_URL}}"
+    #    dest: "{{cni_plugins_folder}}"
+    #    remote_src: True

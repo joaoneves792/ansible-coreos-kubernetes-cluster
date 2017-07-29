@@ -1,0 +1,13 @@
+{
+    "cniVersion": "0.2.0",
+    "name": "k8bridge",
+    "type": "bridge",
+    "bridge": "cni_bridge0",
+    "isGateway": true,
+    "ipMasq": true,
+    "ipam": {
+        "type": "host-local",
+        "subnet": "{{POD_NETWORK}}",
+        "routes": [ { "dst": "0.0.0.0/0" } ]
+    }
+}

@@ -1,0 +1,34 @@
+- name: install kube-dns-de
+  template:
+    src: kube-dns-de.yaml.j2
+    dest: "{{ addons_manifests_folder }}/kube-dns-de.yaml"
+
+- name: install kube-dns-autoscaler-de
+  template:
+    src: kube-dns-autoscaler-de.yaml.j2
+    dest: "{{ addons_manifests_folder }}/kube-dns-autoscaler-de.yaml"
+
+- name: install kube-dns-svc
+  template:
+    src: kube-dns-svc.yaml.j2
+    dest: "{{ addons_manifests_folder }}/kube-dns-svc.yaml"
+
+- name: install heapster-de
+  template:
+    src: heapster-de.yaml.j2
+    dest: "{{ addons_manifests_folder }}/heapster-de.yaml"
+
+- name: install heapster service
+  template:
+    src: heapster-svc.yaml.j2
+    dest: "{{ addons_manifests_folder }}/heapster-svc.yaml"
+
+- name: install dashboard
+  template:
+    src: kube-dashboard-de.yaml.j2
+    dest: "{{ addons_manifests_folder }}/kube-dashboard-de.yaml"
+
+- name: install service
+  template:
+    src: kube-dashboard-svc.yaml.j2
+    dest: "{{ addons_manifests_folder }}/kube-dashboard-svc.yaml"

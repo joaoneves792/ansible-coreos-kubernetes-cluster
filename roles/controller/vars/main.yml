@@ -1,0 +1,17 @@
+---
+# vars file for controller
+K8S_VER: v1.7.2_coreos.0
+HYPERKUBE_IMAGE_REPO: quay.io/coreos/hyperkube
+
+BASE_CNI_PLUGINS_URL: https://github.com/containernetworking/plugins/releases/download/v0.6.0-rc1/cni-plugins-amd64-v0.6.0-rc1.tgz
+
+POD_NETWORK: 10.2.0.0/16
+SERVICE_IP_RANGE: 10.3.0.0/24
+K8S_SERVICE_IP: 10.3.0.1
+DNS_SERVICE_IP: 10.3.0.10
+
+
+manifests_folder: /etc/kubernetes/manifests
+addons_manifests_folder: /srv/kubernetes/manifests
+services_folder: /etc/systemd/system
+cni_plugins_folder: /opt/cni/bin

@@ -1,0 +1,5 @@
+---
+# vars file for etcd
+etcd_name: "{{inventory_hostname}}"
+etcd_ip: "{{hostvars[inventory_hostname]['public_ip']}}"
+etcd_initial_cluster: "{% set comma = joiner(',') %}{% for host in groups['etcds'] %}{{ comma() }}{{host}}=http://{{ hostvars[host]['public_ip'] }}:2380{% endfor %}"

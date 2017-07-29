@@ -1,0 +1,69 @@
+---
+# tasks file for controller
+- name: ensure manifests folder exists
+  file: path="{{manifests_folder}}" state=directory
+
+- name: ensure addons manifests folder exists
+  file: path="{{addons_manifests_folder}}" state=directory
+
+- name: ensure services folder exists
+  file: path="{{services_folder}}" state=directory
+  
+- name: ensure cni plugins folder exists
+  file: path="{{cni_plugins_folder}}" state=directory
+
+- name: ensure cni config folder exists
+  file: path=/etc/kubernetes/cni/net.d state=directory
+
+- name: ensure /opt/bin folder exists
+  file: path=/opt/bin state=directory
+
+- name: install k8s core
+  include: core.yml 
+
+- name: install addons
+  include: addons.yml 
+
+- name: install networking
+  include: networking.yml 
+
+- name: disable update engine
+  systemd:
+    name: update-engine
+    state: stopped
+    masked: yes
+
+- name: enable and start kubelet service
+  systemd:
+    name: kubelet
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: Wait for the k8s api to become online    
+  wait_for:
+    host: "{{ advertise_ip }}"
+    port: 443
+    timeout: 600
+
+- name: start calico
+  command: "docker run --rm --net=host -v /srv/kubernetes/manifests:/host/manifests {{HYPERKUBE_IMAGE_REPO}}:{{K8S_VER}} /hyperkube kubectl apply -f /host/manifests/calico.yaml"
+  retries: 5
+  delay: 5
+  register: result
+  until: result.rc == 0
+
+- name: start plugins
+  command: "docker run --rm --net=host -v /srv/kubernetes/manifests:/host/manifests {{HYPERKUBE_IMAGE_REPO}}:{{K8S_VER}} /hyperkube kubectl apply -f /host/manifests/{{item}}"
+  retries: 5
+  delay: 5
+  register: result
+  until: result.rc == 0
+  with_items:
+      - kube-dns-de.yaml
+      - kube-dns-svc.yaml
+      - kube-dns-autoscaler-de.yaml
+      - heapster-de.yaml
+      - heapster-svc.yaml
+      - kube-dashboard-de.yaml
+      - kube-dashboard-svc.yaml

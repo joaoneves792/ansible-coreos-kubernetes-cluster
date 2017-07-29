@@ -1,0 +1,54 @@
+---
+- name: Bootstrap python
+  hosts: all
+  gather_facts: False
+  roles:
+    - defunctzombie.coreos-bootstrap
+
+- name: Clear DNS IP
+  hosts: all
+  gather_facts: False
+  become: True
+  tasks:
+    - command: /usr/bin/ip addr flush dev eth1
+    - command: "/usr/bin/ip addr add {{hostvars[inventory_hostname]['public_ip']}}/24 dev eth1"
+
+- name: Upload ssl info
+  hosts: all
+  gather_facts: False
+  become: True
+  tasks:
+    - file: path=/etc/kubernetes/ssl state=directory
+    - unarchive:
+        src: "{{item}}"
+        dest: /etc/kubernetes/ssl
+      with_fileglob:
+        - "ssl/*-{{hostvars[inventory_hostname]['public_ip']}}.tar"
+
+- name: Etcd
+  hosts: etcds
+  gather_facts: True
+  become: True
+  roles:
+    - etcd
+
+- name: Controllers
+  hosts: controllers
+  gather_facts: True
+  become: True
+  vars:
+    etcd_endpoints: "{% set comma = joiner(',') %}{% for host in groups['etcds'] %}{{ comma() }}http://{{ hostvars[host]['public_ip'] }}:2379{% endfor %}"
+    advertise_ip : "{{hostvars[inventory_hostname]['public_ip']}}"
+  roles:
+    - controller 
+
+- name: Workers
+  hosts: workers
+  gather_facts: True
+  become: True
+  vars:
+    etcd_endpoints: "{% set comma = joiner(',') %}{% for host in groups['etcds'] %}{{ comma() }}http://{{ hostvars[host]['public_ip'] }}:2379{% endfor %}"
+    advertise_ip : "{{hostvars[inventory_hostname]['public_ip']}}"
+    controller_endpoints: "{% set comma = joiner(',') %}{% for host in groups['controllers'] %}{{ comma() }}https://{{ hostvars[host]['public_ip'] }}:443{% endfor %}"
+  roles:
+    - worker 
